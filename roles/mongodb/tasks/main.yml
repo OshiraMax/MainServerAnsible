@@ -1,0 +1,67 @@
+---
+- name: Добавление репозитория focal-security для libssl1.1
+  apt_repository:
+    repo: "deb http://security.ubuntu.com/ubuntu focal-security main"
+    state: present
+    update_cache: yes
+
+- name: Установка пакета libssl1.1
+  apt:
+    name: libssl1.1
+    state: present
+
+- name: Добавление ключа GPG для MongoDB
+  ansible.builtin.shell: "curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-org-archive-keyring.gpg"
+  args:
+    creates: /usr/share/keyrings/mongodb-org-archive-keyring.gpg
+
+- name: Добавление репозитория MongoDB
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/mongodb-org-archive-keyring.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse"
+    state: present
+    update_cache: yes
+
+- name: Установка MongoDB
+  apt:
+    name: mongodb-org
+    state: present
+
+- name: Создать каталог данных для MongoDB на внешнем диске
+  file:
+    path: "/mnt/server_drive/Database/mongodb"
+    state: directory
+    owner: mongodb
+    group: mongodb
+    mode: '0755'
+  become: yes
+
+- name: Обновить конфигурацию MongoDB для использования нового каталога данных
+  lineinfile:
+    path: /etc/mongod.conf
+    regexp: '^  dbPath:'
+    line: "  dbPath: /mnt/server_drive/Database/mongodb"
+  notify: Перезапустить MongoDB
+  become: yes
+
+- name: Убедиться, что MongoDB запущен и включен
+  systemd:
+    name: mongod
+    state: started
+    enabled: true
+
+- name: Установка библиотеки pymongo
+  apt:
+    name: python3-pymongo
+    state: present
+  become: yes
+
+- name: Создание пользователя базы данных
+  community.mongodb.mongodb_user:
+    name: "{{ mongodb_user }}"
+    password: "{{ mongodb_password }}"
+    database: "{{ mongodb_database }}"
+    roles:
+      - readWrite
+      - dbAdmin
+    state: present
+    update_password: on_create

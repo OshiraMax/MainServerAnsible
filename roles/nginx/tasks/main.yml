@@ -1,0 +1,11 @@
+---
+- name: Проверить, установлен ли nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Проверить, что NGINX запущен
+  service:
+    name: nginx
+    state: started
+

@@ -1,0 +1,37 @@
+---
+- name: Проверить, установлен ли ufw
+  apt:
+    name: ufw
+    state: present
+  register: ufw_installed
+
+- debug:
+    msg: "UFW установлен"
+
+- name: Разрешить SSH (порт 22) в ufw
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: Разрешить HTTP (порт 80) в ufw
+  ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+
+- name: Разрешить HTTPS (порт 443) в ufw
+  ufw:
+    rule: allow
+    port: '443'
+    proto: tcp
+
+- name: Разрешить PostgreSQL (порт 5432) в ufw
+  ufw:
+    rule: allow
+    port: '5432'
+    proto: tcp
+
+- name: Включить и перезапустить ufw
+  ufw:
+    state: enabled

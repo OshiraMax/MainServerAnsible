@@ -1,0 +1,56 @@
+---
+- name: Установка зависимостей для Docker
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+
+- name: Добавление официального Docker GPG ключа
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Добавление Docker репозитория
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+    update_cache: yes
+
+- name: Установка Docker CE
+  apt:
+    name: docker-ce
+    state: present
+
+- name: Проверить наличие директории для Docker данных на внешнем диске
+  stat:
+    path: "{{ docker_data_root }}"
+  register: docker_data_dir
+
+- name: Создать директорию для Docker данных на внешнем диске, если её нет
+  file:
+    path: "{{ docker_data_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: docker_data_dir.stat.exists is not defined or not docker_data_dir.stat.exists
+
+- name: Проверить наличие файла конфигурации Docker
+  stat:
+    path: /etc/docker/daemon.json
+  register: docker_daemon_config
+
+- name: Убедиться, что конфигурация Docker установлена
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Перезапустить Docker
+  when: docker_daemon_config.stat.exists == false or docker_daemon_config.stat.checksum != lookup("file", "templates/daemon.json.j2") | checksum
+
+

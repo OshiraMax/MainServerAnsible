@@ -1,0 +1,6 @@
+---
+- name: Перезапустить или запустить fail2ban, если не запущен
+  service:
+    name: fail2ban
+    state: started
+    enabled: true

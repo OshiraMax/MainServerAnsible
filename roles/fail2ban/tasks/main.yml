@@ -1,0 +1,22 @@
+---
+- name: Проверить, установлен ли fail2ban
+  apt:
+    name: fail2ban
+    state: present
+  register: fail2ban_installed
+
+- debug:
+    msg: "Fail2Ban установлен"
+
+- name: Проверить наличие файла /etc/fail2ban/jail.local
+  stat:
+    path: /etc/fail2ban/jail.local
+  register: jail_local_file
+
+- name: Скопировать конфигурацию fail2ban, если jail.local не существует
+  command: cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+  when: jail_local_file.stat.exists == False
+  notify: Перезапустить fail2ban
+
+
+

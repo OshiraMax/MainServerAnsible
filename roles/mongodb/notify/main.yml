@@ -1,0 +1,4 @@
+- name: Перезапустить MongoDB
+  service:
+    name: mongod
+    state: restarted

@@ -1,0 +1,26 @@
+---
+- hosts: my_servers
+  become: yes
+
+  pre_tasks:
+    - name: Обновление списка пакетов
+      apt:
+        update_cache: yes
+
+  collections:
+    - community.postgresql
+    - community.mongodb
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.12
+
+  roles:
+    - ufw
+    - fail2ban
+    - nginx
+    - docker
+    - certbot
+    - postgresql 
+    - mongodb
+    - prometheus
+    

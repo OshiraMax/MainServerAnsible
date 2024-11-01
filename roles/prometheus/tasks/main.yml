@@ -1,0 +1,18 @@
+---
+- name: Установка Prometheus
+  apt:
+    name: prometheus
+    state: present
+
+- name: Убедиться, что Prometheus запущен и включен
+  systemd:
+    name: prometheus
+    enabled: true
+    state: started
+
+- name: Настройка firewall для Prometheus
+  ufw:
+    rule: allow
+    port: '9090'
+    proto: tcp
+    state: enabled

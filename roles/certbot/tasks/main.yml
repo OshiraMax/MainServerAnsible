@@ -1,0 +1,7 @@
+---
+- name: Установка Certbot и его зависимостей
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
