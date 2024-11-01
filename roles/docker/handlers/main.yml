@@ -4,4 +4,3 @@
     name: docker
     state: restarted
     enabled: true
-  listen: Перезапустить Docker

@@ -24,11 +24,6 @@
     name: docker-ce
     state: present
 
-- name: Проверить наличие директории для Docker данных на внешнем диске
-  stat:
-    path: "{{ docker_data_root }}"
-  register: docker_data_dir
-
 - name: Создать директорию для Docker данных на внешнем диске, если её нет
   file:
     path: "{{ docker_data_root }}"
@@ -36,14 +31,9 @@
     owner: root
     group: root
     mode: '0755'
-  when: docker_data_dir.stat.exists is not defined or not docker_data_dir.stat.exists
+  when: not docker_data_dir.stat.exists | default(false)
 
-- name: Проверить наличие файла конфигурации Docker
-  stat:
-    path: /etc/docker/daemon.json
-  register: docker_daemon_config
-
-- name: Убедиться, что конфигурация Docker установлена
+- name: Убедиться, что конфигурация Docker установлена и актуальна
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
@@ -51,6 +41,5 @@
     owner: root
     group: root
   notify: Перезапустить Docker
-  when: docker_daemon_config.stat.exists == false or docker_daemon_config.stat.checksum != lookup("file", "templates/daemon.json.j2") | checksum
 
 

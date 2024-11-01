@@ -28,7 +28,7 @@
 
 - name: Создать каталог данных для MongoDB на внешнем диске
   file:
-    path: "/mnt/server_drive/Database/mongodb"
+    path: "{{ mongodb_path }}"
     state: directory
     owner: mongodb
     group: mongodb
@@ -39,7 +39,7 @@
   lineinfile:
     path: /etc/mongod.conf
     regexp: '^  dbPath:'
-    line: "  dbPath: /mnt/server_drive/Database/mongodb"
+    line: "  dbPath: {{ mongodb_path }}"
   notify: Перезапустить MongoDB
   become: yes
 

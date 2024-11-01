@@ -1,22 +1,13 @@
 ---
-- name: Установка пакета acl для поддержки ACL
-  apt:
-    name: acl
-    state: present
-
-- name: Установка зависимостей для работы с PostgreSQL в Ansible
+- name: Установка необходимых пакетов
   apt:
     name:
+      - acl
       - python3-psycopg2
+      - postgresql
+      - postgresql-contrib
     state: present
   become: yes
-
-- name: Установка PostgreSQL
-  apt:
-    name:
-      - "postgresql"
-      - "postgresql-contrib"
-    state: present
 
 - name: Создать каталог данных для PostgreSQL на внешнем диске
   file:
@@ -35,28 +26,18 @@
   notify: Перезапустить PostgreSQL
   become: yes
 
-- name: Инициализация кластера базы данных в новом каталоге (если пустой)
+- name: Инициализация кластера базы данных в новом каталоге
   command: "/usr/lib/postgresql/16/bin/initdb -D {{ postgresql_data_directory }}"
   args:
     creates: "{{ postgresql_data_directory }}/PG_VERSION"
   become: yes
   become_user: postgres
-  when: postgresql_data_directory is defined
 
 - name: Убедиться, что PostgreSQL запущен и включен
   service:
     name: postgresql
     state: started
     enabled: true
-
-- name: Создание временного каталога для Ansible в домашней директории пользователя postgres
-  file:
-    path: /var/lib/postgresql/.ansible/tmp
-    state: directory
-    owner: postgres
-    group: postgres
-    mode: '0700'
-  become: yes
 
 - name: Создание базы данных
   become_user: postgres
@@ -69,14 +50,14 @@
 
 - name: Создание пользователя базы данных
   become_user: postgres
-  community.postgresql.postgresql_user:
+  postgresql_user:
     name: "{{ postgresql_user }}"
     password: "{{ postgresql_password }}"
     state: present
 
 - name: Назначение привилегий пользователю на базу данных
   become_user: postgres
-  community.postgresql.postgresql_privs:
+  postgresql_privs:
     db: "{{ postgresql_database }}"
     type: database
     privs: "ALL"

@@ -1,0 +1,16 @@
+ufw_ports:
+      - port: '22'    # SSH
+        proto: 'tcp'
+        rule: 'allow'     
+      - port: '80'    # HTTP 
+        proto: 'tcp' 
+        rule: 'allow'       
+      - port: '443'   # HTTPS
+        proto: 'tcp'  
+        rule: 'allow'    
+      - port: '5432'  # PostgreSQL
+        proto: 'tcp' 
+        rule: 'allow' 
+      - port: '9090'  # Prometheus
+        proto: 'tcp' 
+        rule: 'allow' 
